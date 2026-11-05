@@ -10,7 +10,7 @@
   /vendor: `mount -o remount,rw /vendor`
 
 ## Launcher state
-- `com.gathin.tvhome` v2.13 (versionCode 16) on the latest upstream launcher base (3.3-era), HOME role holder. TV boots straight into it.
+- `com.gathin.tvhome` tracks upstream version (3.3 / versionCode 12), HOME role holder. TV boots straight into it.
 - Source `..\launcher\`; JDK 21 (`C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot`), SDK `C:\Android\sdk`.
 - Two lanes, must be byte-identical (md5 match):
   - Boot lane: `/vendor/priv-app/tvhome/tvhome.apk` (root:root, 644, `u:object_r:vendor_app_file:s0`).
@@ -37,7 +37,7 @@
 - App config: `launcher/app/src/main/res/values/config.xml` (dock_apps, hidden_apps, columns, ...
   and `app_library` on), overlaid by theme's config.json.
 
-## Launcher UX (v2.13 on upstream 3.3-era base)
+## Launcher UX
 - Grid shows all installed launchables, alphabetical; order.txt pins the fitted ones first,
   dock row on top. New installs land in the grid alphabetically.
 - Tile menu (long-press / hold OK, `tile_menu`): Move (D-pad reorder), Remove (library),
