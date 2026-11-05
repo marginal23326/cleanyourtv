@@ -10,7 +10,7 @@
   /vendor: `mount -o remount,rw /vendor`
 
 ## Launcher state
-- `com.gathin.tvhome` v2.13 (versionCode 16), HOME role holder. TV boots straight into it.
+- `com.gathin.tvhome` v2.13 (versionCode 16) on the latest upstream launcher base (3.3-era), HOME role holder. TV boots straight into it.
 - Source `..\launcher\`; JDK 21 (`C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot`), SDK `C:\Android\sdk`.
 - Two lanes, must be byte-identical (md5 match):
   - Boot lane: `/vendor/priv-app/tvhome/tvhome.apk` (root:root, 644, `u:object_r:vendor_app_file:s0`).
@@ -29,17 +29,24 @@
 - If resolution becomes ambiguous (e.g. system data cleared): resolver pops once on Home; pick launcher + "Always" (persisted in `/data/system/users/0/package-restrictions.xml`).
 
 ## Launcher data
-- Grid layout: `/data/user_de/0/com.gathin.tvhome/files/home.json` (uid:gid 10086:10086):
-  `{"order":[flat component keys on the grid], "hidden":[legacy, ignored]}`.
-- Missing/unparseable home.json -> grid resets to config defaults (dock_apps then alphabetical).
+- Grid order: `/data/user_de/0/com.gathin.tvhome/files/order.txt` (uid:gid 10086:10086, 600):
+  `tvhome-order 1` header, `dock <comma-joined dock_apps>` line, then one flat component key per row
+  (dock first, then the rest in display order). `docked <n>` is omitted: dock_apps decides the dock.
+- Missing/unparseable order.txt -> grid resets to config defaults (dock_apps, then alphabetical).
 - Rescue: restore copy, chown 10086:10086, `restorecon -RF /data/user_de/0/com.gathin.tvhome`.
-- App config: `launcher/app/src/main/res/values/config.xml` (dock_apps, hidden_apps, columns, ...), overlaid by theme's config.json.
+- App config: `launcher/app/src/main/res/values/config.xml` (dock_apps, hidden_apps, columns, ...
+  and `app_library` on), overlaid by theme's config.json.
 
-## Launcher UX (v2.13)
-- Grid = explicitly added apps only. Trailing "+" tile opens the drawer (all installed launchables not on the grid, alphabetical). New installs land in the drawer.
-- Tile menu (long-press / menu key): Remove (to drawer), Uninstall, App info. While open: Left/Right moves its tile one slot per key (held repeats), first row = dock; nothing moves past "+". Every step saves home.json.
-- Settings-pill long-press: Sort A-Z, Reboot, Power off (both `sys.powerctl`).
-- No accessibility services. `enabled_accessibility_services` is HiRM-only — keep it.
+## Launcher UX (v2.13 on upstream 3.3-era base)
+- Grid shows all installed launchables, alphabetical; order.txt pins the fitted ones first,
+  dock row on top. New installs land in the grid alphabetically.
+- Tile menu (long-press / hold OK, `tile_menu`): Move (D-pad reorder), Remove (library),
+  App info, Uninstall (system delete dialog, `REQUEST_DELETE_PACKAGES`).
+- App library on (`app_library`): pill after the last Home row — add back, restore hidden.
+- Settings pill: Reboot and Power off rows (confirm dialogs; both `Runtime.exec setprop sys.powerctl`,
+  the only reboot route — REBOOT permission is denied). Upstream's "Restart…" power-dialog row stays
+  inert: it needs the HomeKeyService accessibility service, which is not enabled here.
+- No other accessibility services. `enabled_accessibility_services` is HiRM-only — keep it.
 
 ## Device tweaks / package state (user 0)
 - Animation scales all 0.5: `window_animation_scale`, `transition_animation_scale`, `animator_duration_scale`. Revert: `settings put global <name> 1`.
