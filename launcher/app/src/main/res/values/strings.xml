@@ -99,6 +99,17 @@
     <string name="dock_edit">Edit dock</string>
     <!-- Settings menu: opens the system power menu (Restart on most TVs). -->
     <string name="power_menu">Restart…</string>
+    <!-- Settings menu rows that setprop sys.powerctl directly, for TVs where REBOOT is denied and
+         the power menu helper is off. -->
+    <string name="menu_reboot">Reboot</string>
+    <string name="menu_power_off">Power off</string>
+    <string name="reboot_title">Reboot now?</string>
+    <string name="reboot_body">The system restarts.</string>
+    <string name="reboot_now">Reboot</string>
+    <string name="poweroff_title">Power off now?</string>
+    <string name="poweroff_body">Shuts down fully. The remote\'s power button turns it back on.</string>
+    <string name="poweroff_now">Power off</string>
+    <string name="cancel">Cancel</string>
     <string name="dock_edit_hint">Choose the dock place to change and press OK. Back to finish.</string>
     <string name="dock_edit_pick_app">Now choose the app to put there and press OK. Back to choose another place.</string>
     <string name="tile_add_to_dock">Add to dock</string>
@@ -115,6 +126,8 @@
     <string name="library_remove_shortcut">Remove from Home</string>
     <string name="library_open">Open</string>
     <string name="library_app_info">App info</string>
+    <!-- Tile menu: the system uninstall dialog (REQUEST_DELETE_PACKAGES). -->
+    <string name="menu_uninstall">Uninstall</string>
     <string name="library_save_failed">Could not save the shortcut</string>
     <string name="library_recent">New · Add to Home</string>
     <string name="library_hint_add">Press to add to Home · Hold for options</string>

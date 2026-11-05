@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A small confirm dialog for the power rows (Reboot, Power off): title, one-line body and two
+     buttons. OK is focused first; Back dismisses. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/glass_panel"
+    android:paddingStart="26dp"
+    android:paddingEnd="26dp"
+    android:paddingTop="22dp"
+    android:paddingBottom="20dp"
+    android:elevation="12dp">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textColor="#FFFFFFFF"
+        android:textSize="22sp"
+        android:fontFamily="@string/font_medium"
+        android:letterSpacing="-0.01" />
+
+    <TextView
+        android:id="@+id/body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="#D9FFFFFF"
+        android:textSize="15sp"
+        android:lineSpacingExtra="3sp"
+        android:fontFamily="@string/font_body" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <TextView
+            android:id="@+id/btnCancel"
+            style="@style/TopButton"
+            android:text="@string/cancel"
+            android:nextFocusUp="@+id/btnCancel"
+            android:nextFocusDown="@+id/btnCancel"
+            android:nextFocusLeft="@+id/btnCancel"
+            android:nextFocusRight="@+id/btnOk" />
+
+        <TextView
+            android:id="@+id/btnOk"
+            style="@style/TopButton"
+            android:text="@string/reboot_now"
+            android:nextFocusUp="@+id/btnOk"
+            android:nextFocusDown="@+id/btnOk"
+            android:nextFocusLeft="@+id/btnCancel"
+            android:nextFocusRight="@+id/btnOk" />
+    </LinearLayout>
+</LinearLayout>

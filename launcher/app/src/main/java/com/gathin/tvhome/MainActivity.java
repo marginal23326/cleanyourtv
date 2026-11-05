@@ -3710,12 +3710,57 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         addSettingsMenuRow(rows, popup, R.string.reorder, this::toggleReorder);
         // A launcher may not restart the TV itself; the Home key helper can open the system power menu instead.
         if (HomeKeyService.canOpenPowerMenu()) addSettingsMenuRow(rows, popup, R.string.power_menu, HomeKeyService::openPowerMenu);
+        // On TVs where REBOOT is denied and the helper is off, the row above never shows: setprop
+        // sys.powerctl works there where the shell has it. Each gets its own confirm first.
+        addSettingsMenuRow(rows, popup, R.string.menu_reboot,
+                () -> confirmPower(R.string.reboot_title, R.string.reboot_body, R.string.reboot_now,
+                        () -> setPowerState("reboot")));
+        addSettingsMenuRow(rows, popup, R.string.menu_power_off,
+                () -> confirmPower(R.string.poweroff_title, R.string.poweroff_body, R.string.poweroff_now,
+                        () -> setPowerState("shutdown")));
         panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         popup.setWidth(Math.max((int) (200 * density), panel.getMeasuredWidth()));
         // Hebrew puts Settings at the left of the header: grow the menu inward from it.
         dropIn(popup, panel, anchor, getResources().getBoolean(R.bool.rtl_menu_bar)
                 ? Gravity.START : Gravity.END);
         rows.getChildAt(0).requestFocus();
+    }
+
+    /** A small confirm dialog for the power rows (dialog_confirm.xml), in the style of the card prompt:
+     *  OK runs the action, Cancel and Back dismiss it. */
+    private void confirmPower(int title, int body, int okText, Runnable action) {
+        View panel = getLayoutInflater().inflate(R.layout.dialog_confirm, root, false);
+        ((TextView) panel.findViewById(R.id.title)).setText(title);
+        ((TextView) panel.findViewById(R.id.body)).setText(body);
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(panel);
+        dialog.setCanceledOnTouchOutside(false);
+        Window w = dialog.getWindow();
+        if (w != null) {
+            w.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            w.setLayout((int) (380 * density), ViewGroup.LayoutParams.WRAP_CONTENT);
+            w.setDimAmount(0.6f);
+        }
+        panel.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
+        TextView ok = panel.findViewById(R.id.btnOk);
+        ok.setText(okText);
+        ok.setOnClickListener(v -> {
+            dialog.dismiss();
+            action.run();
+        });
+        dialog.setOnCancelListener(d -> dialog.dismiss());   // Back ends it like Cancel
+        ok.requestFocus();
+        dialog.show();
+    }
+
+    /** setprop sys.powerctl: neither needs a result nor a wait, so fire and forget on the main thread. */
+    private void setPowerState(String state) {
+        try {
+            Runtime.getRuntime().exec(new String[]{"setprop", "sys.powerctl", state});
+        } catch (IOException exec) {
+            // No shell to setprop on this TV; the set stays as it is.
+        }
     }
 
     /** A tile configured with launch_actions "input:<id>" (config.xml): switch to that TV input directly,
@@ -3842,6 +3887,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // Some firmware has no App info page at all; a row that only toasts "can't open" helps nobody.
         Intent info = SystemSettings.appInfo(this, pkg);
         if (info != null) addSettingsMenuRow(rows, popup, R.string.library_app_info, () -> open(info));
+        // Uninstall goes to the system installer's dialog and needs REQUEST_DELETE_PACKAGES; where that
+        // dialog exists, the permission is enough (on some firmware it resolves as a normal permission).
+        // As with App info, a row that only throws helps nobody: offer it only where a handler resolves.
+        Intent uninstall = new Intent(Intent.ACTION_DELETE, Uri.parse("package:" + pkg));
+        if (uninstall.resolveActivity(getPackageManager()) != null)
+            addSettingsMenuRow(rows, popup, R.string.menu_uninstall, () -> startActivity(uninstall));
         panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
         popup.setWidth(Math.max((int) (200 * density), panel.getMeasuredWidth()));
         // Dock tiles sit near the bottom of the screen: open the menu above the tile when it would not fit below.

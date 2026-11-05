@@ -21,6 +21,9 @@
     <!-- YaOS (Yandex TV OS): HDMI, AV and the tuner all play in com.yandex.tv.live, whose activities require
          this permission (protection level normal, so it is granted at install). Ignored on other TVs. -->
     <uses-permission android:name="yandex.tv.permission.ACCESS_TV_SOURCE" />
+    <!-- Powers the tile menu's Uninstall dialog. On some firmware it resolves as a normal permission;
+         DELETE_PACKAGES stays a privilege. -->
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
 
     <!-- Android 11+ package visibility: lets the launcher list the TV apps it shows as tiles, and the
          apps that declare a module card (docs/specs/card.md). -->
@@ -76,7 +79,8 @@
         android:banner="@drawable/banner"
         android:theme="@style/Theme.TvHome"
         android:allowBackup="false"
-        android:localeConfig="@xml/locales_config">
+        android:localeConfig="@xml/locales_config"
+        android:directBootAware="true">
 
         <activity
             android:name=".MainActivity"
@@ -89,12 +93,15 @@
             android:screenOrientation="landscape">
             <!-- CVTE firmware (ro.CVT_EN_COMMON_HOME_INTENT=1) sends the Home key and boot as MAIN + HOME +
                  COMMON_HOME, which only matches a filter that lists both (#1201). In this one filter, not a second
-                 one: a plain HOME intent still matches it, and a second filter could list this activity twice. -->
-            <intent-filter>
+                 one: a plain HOME intent still matches it, and a second filter could list this activity twice.
+                 Some firmware (CVTE HiSilicon boxes) resolves Home-while-on-home against CATEGORY_TV_HOME instead;
+                 claiming it with priority 1 beats the TvSetting activity (priority 0), so the Home key stays here. -->
+            <intent-filter android:priority="1">
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.COMMON_HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.TV_HOME" />
                 <!-- ColorOS TV: boot only promotes a HOME that declares this category.
                      docs/devices/oppo-k9-55-oppocnm632.md (prior art: aerial-tv oppo-coloros-tv.md). -->
                 <category android:name="com.heytap.tv.launcher.category.MODERN_HOME" />
